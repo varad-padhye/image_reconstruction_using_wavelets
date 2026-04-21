@@ -1,0 +1,44 @@
+# configs/train.yaml
+
+# ─── Data ────────────────────────────────────
+data_root: "./data/DIV2K"
+image_size: 256
+scale: 4                        # downscale factor for SR (was 2 before — that was too mild)
+degrade_mode: "random"          # random | sr | blur | jpeg | full
+
+# ─── Diffusion (Stage 1) ─────────────────────
+T: 1000
+in_ch: 3
+unet_base_ch: 64
+time_dim: 256
+epochs: 100
+batch_size: 8
+lr: 0.0001
+save_every: 10
+ckpt_dir: "./checkpoints"
+
+# Loss weights
+w_mse: 1.0
+w_perceptual: 0.1
+w_ssim: 0.2
+
+# ─── HF Predictor (Stage 2a — fast) ──────────
+hf_base_ch: 48
+hf_res_blocks: 4
+hf_epochs: 50
+hf_lr: 0.0002
+hf_sim_noise_std: 0.05
+
+# ─── HF Fine-tune (Stage 2b — on real DDIM) ──
+hf_ft_epochs: 10               # short fine-tune after fast training
+hf_ft_lr: 0.00005
+hf_ft_ddim_steps: 20           # fewer steps → faster per-batch
+
+# ─── Evaluation ──────────────────────────────
+ddim_steps: 50
+n_save_images: 8
+n_save_batches: 3
+
+# ─── Checkpoint paths (for --stage eval/hf_finetune) ─
+diff_ckpt: "./checkpoints/diffusion_final.pt"
+hf_ckpt:   "./checkpoints/hf_finetuned.pt"
